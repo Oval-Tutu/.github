@@ -1,0 +1,88 @@
+name: 🐛 Bug Report
+description: Report a bug or issue with the project
+title: "🐛 Brief description of the bug"
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please provide as much detail as possible to help us understand and fix the issue.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues and this bug hasn't been reported previously
+          required: true
+        - label: I have tried reproducing this with the latest version
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the bug
+      placeholder: |
+        1. Launch the game
+        2. Navigate to main menu
+        3. Click on "Start Game"
+        4. Bug occurs...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened instead?
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: What operating system are you using?
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Ubuntu/Debian Linux
+        - Arch Linux
+        - Other Linux distribution
+        - Other (specify in additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Videos
+      description: If applicable, add screenshots or videos to help explain the problem
+      placeholder: Drag and drop files here, or paste image URLs
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Messages or Console Output
+      description: Any error messages, console output, or log files
+      placeholder: Paste any error messages or console output here
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful
+      placeholder: Hardware specs, special setup, related issues, etc.
