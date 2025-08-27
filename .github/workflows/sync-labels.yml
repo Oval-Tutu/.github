@@ -1,0 +1,153 @@
+name: Sync Organization Labels
+
+on:
+  # Trigger when labels are modified in this repository
+  issues:
+    types: [labeled, unlabeled]
+  
+  # Manual trigger
+  workflow_dispatch:
+  
+  # Weekly sync to catch any drift
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      repository-projects: read
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub CLI
+        run: |
+          # GitHub CLI is pre-installed on GitHub runners
+          gh --version
+
+      - name: Get source labels from .github repository
+        id: get-source-labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Getting labels from Oval-Tutu/.github repository..."
+          gh label list --repo Oval-Tutu/.github --json name,color,description > source-labels.json
+          
+          echo "Source labels:"
+          cat source-labels.json | jq .
+          
+          # Store labels as output for next step
+          echo "labels=$(cat source-labels.json | jq -c .)" >> $GITHUB_OUTPUT
+
+      - name: Get organization repositories
+        id: get-repos
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Getting all repositories in Oval-Tutu organization..."
+          
+          # Get all repos, exclude .github repo (source of truth), exclude forks and archived repos
+          gh repo list Oval-Tutu \
+            --limit 100 \
+            --json name,isArchived,isFork,isPrivate \
+            --jq '.[] | select(.name != ".github") | select(.isArchived == false) | select(.isFork == false) | .name' > target-repos.txt
+          
+          echo "Target repositories:"
+          cat target-repos.txt
+          
+          # Count repos for summary
+          repo_count=$(wc -l < target-repos.txt)
+          echo "repo-count=$repo_count" >> $GITHUB_OUTPUT
+
+      - name: Sync labels to target repositories
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          source_labels='${{ steps.get-source-labels.outputs.labels }}'
+          
+          echo "Starting label sync process..."
+          
+          # Initialize counters
+          total_repos=0
+          successful_repos=0
+          failed_repos=0
+          
+          # Process each target repository
+          while IFS= read -r repo_name; do
+            if [ -z "$repo_name" ]; then
+              continue
+            fi
+            
+            echo ""
+            echo "🔄 Syncing labels for Oval-Tutu/$repo_name"
+            total_repos=$((total_repos + 1))
+            
+            # Process each label from source
+            echo "$source_labels" | jq -r '.[] | @base64' | while IFS= read -r label_data; do
+              # Decode the label data
+              label_json=$(echo "$label_data" | base64 -d)
+              name=$(echo "$label_json" | jq -r '.name')
+              color=$(echo "$label_json" | jq -r '.color')
+              description=$(echo "$label_json" | jq -r '.description // ""')
+              
+              echo "  📝 Syncing label: $name"
+              
+              # Create or update label (--force flag updates existing labels)
+              if gh label create "$name" \
+                --color "$color" \
+                --description "$description" \
+                --repo "Oval-Tutu/$repo_name" \
+                --force 2>/dev/null; then
+                echo "    ✅ Label '$name' synced successfully"
+              else
+                echo "    ⚠️  Label '$name' sync failed"
+              fi
+            done
+            
+            if [ $? -eq 0 ]; then
+              successful_repos=$((successful_repos + 1))
+              echo "  ✅ Repository $repo_name completed successfully"
+            else
+              failed_repos=$((failed_repos + 1))
+              echo "  ❌ Repository $repo_name had errors"
+            fi
+            
+          done < target-repos.txt
+          
+          echo ""
+          echo "📊 Sync Summary:"
+          echo "  Total repositories processed: $total_repos"
+          echo "  Successful: $successful_repos"
+          echo "  Failed: $failed_repos"
+          
+          if [ $failed_repos -gt 0 ]; then
+            echo "⚠️  Some repositories had sync errors. Check logs above."
+            exit 1
+          else
+            echo "🎉 All repositories synced successfully!"
+          fi
+
+      - name: Create sync summary
+        if: always()
+        run: |
+          echo "## Label Sync Report 🏷️" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Source Repository" >> $GITHUB_STEP_SUMMARY
+          echo "- 📍 Labels sourced from: \`Oval-Tutu/.github\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Target Repositories" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 Repositories synced: ${{ steps.get-repos.outputs.repo-count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚫 Excluded: \`.github\` (source repository), archived repos, forks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Labels Applied" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat source-labels.json >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
