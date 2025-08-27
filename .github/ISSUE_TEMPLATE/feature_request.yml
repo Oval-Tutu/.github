@@ -24,8 +24,8 @@ body:
       label: Problem or Use Case
       description: What problem does this feature solve? What's the motivation?
       placeholder: |
-        Example: "I'm always frustrated when I have to manually restart the game after changing settings..."
-        or "It would be great if players could customize their controls because..."
+        Example: "I'm always frustrated when I have to manually handle X in my project..."
+        or "It would be great if the library could support Y because..."
     validations:
       required: true
 
@@ -46,13 +46,14 @@ body:
       label: Feature Type
       description: What type of feature is this?
       options:
-        - New gameplay mechanic
+        - New API or functionality
         - Quality of life improvement
-        - User interface enhancement
         - Performance optimization
-        - Accessibility feature
-        - Developer/modding tool
+        - User interface enhancement
         - Documentation improvement
+        - Developer tooling
+        - Testing or debugging feature
+        - Platform support
         - Other (specify in additional context)
     validations:
       required: true
@@ -63,10 +64,8 @@ body:
       label: Priority
       description: How important is this feature to you?
       options:
-        - Nice to have
-        - Would be helpful
-        - Important for my use case
-        - Critical/blocking issue
+        - Nice to Have
+        - Must Have
     validations:
       required: true
 
@@ -81,8 +80,8 @@ body:
     id: examples
     attributes:
       label: Examples or References
-      description: Any examples from other games/projects, mockups, or references
-      placeholder: Links to similar features in other games, mockups, screenshots, etc.
+      description: Any examples from other libraries/projects, mockups, or references
+      placeholder: Links to similar features in other libraries, mockups, screenshots, etc.
 
   - type: textarea
     id: additional
