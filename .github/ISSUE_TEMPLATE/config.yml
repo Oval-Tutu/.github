@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discord Community
+    url: https://discord.gg/WUv4dJtvkN
+    about: Got questions or want to chat? Join our Discord community for quick help, discussions, and to connect with other players and developers!
+  - name: 🌐 Oval Tutu Website
+    url: https://oval-tutu.com
+    about: Visit our main website for game downloads, updates, and more information about our projects
+  - name: 🎮 Steam Store
+    url: https://store.steampowered.com/dev/ovaltutu
+    about: Check out our published games on Steam and leave reviews to support us
+  - name: 🕹️ Itch.io Games
+    url: https://ovaltutu.itch.io/
+    about: Browse and play our games on Itch.io, including free demos and early access builds
