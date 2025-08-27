@@ -19,6 +19,8 @@ jobs:
       contents: read
       issues: read
       repository-projects: read
+      metadata: read
+      administration: write
     
     steps:
       - name: Checkout
@@ -52,7 +54,7 @@ jobs:
           
           # Get all repos, exclude .github repo (source of truth), exclude forks and archived repos
           gh repo list Oval-Tutu \
-            --limit 100 \
+            --limit 1000 \
             --json name,isArchived,isFork,isPrivate \
             --jq '.[] | select(.name != ".github") | select(.isArchived == false) | select(.isFork == false) | .name' > target-repos.txt
           
@@ -101,15 +103,17 @@ jobs:
               
               echo "  📝 Syncing label: $name"
               
-              # Create or update label (--force flag updates existing labels)
-              if gh label create "$name" \
+              # Create or update label with error capture
+              label_error=$(gh label create "$name" \
                 --color "$color" \
                 --description "$description" \
                 --repo "Oval-Tutu/$repo_name" \
-                --force 2>/dev/null; then
+                --force 2>&1)
+              if [ $? -eq 0 ]; then
                 echo "    ✅ Label '$name' synced successfully"
               else
                 echo "    ⚠️  Label '$name' sync failed"
+                echo "      Error: $label_error"
                 repo_failed=1
               fi
             done < labels-base64.txt
