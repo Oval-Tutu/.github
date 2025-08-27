@@ -33,9 +33,9 @@ body:
       label: Steps to Reproduce
       description: Detailed steps to reproduce the bug
       placeholder: |
-        1. Launch the game
-        2. Navigate to main menu
-        3. Click on "Start Game"
+        1. Initialize the library with specific settings
+        2. Call a particular function or method
+        3. Observe the unexpected behavior
         4. Bug occurs...
     validations:
       required: true
@@ -53,15 +53,19 @@ body:
     id: platform
     attributes:
       label: Platform
-      description: What operating system are you using?
+      description: What platform are you using?
       options:
-        - Windows 10
-        - Windows 11
-        - macOS (Intel)
-        - macOS (Apple Silicon)
-        - Ubuntu/Debian Linux
-        - Arch Linux
-        - Other Linux distribution
+        - Android
+        - iOS
+        - Linux
+        - macOS
+        - Nintendo Switch
+        - PlayStation
+        - SteamDeck
+        - tvOS
+        - Web
+        - Windows
+        - Xbox
         - Other (specify in additional context)
     validations:
       required: true
@@ -85,4 +89,4 @@ body:
     attributes:
       label: Additional Context
       description: Any other information that might be helpful
-      placeholder: Hardware specs, special setup, related issues, etc.
+      placeholder: Library version, hardware specs, special setup, related issues, etc.
