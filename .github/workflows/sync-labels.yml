@@ -1,18 +1,16 @@
 name: Sync Organization Labels
 
 on:
+  # Trigger when labels themselves are created, edited, or deleted in this repository
+  label:
+    types: [created, edited, deleted]
+  
   # Manual trigger
   workflow_dispatch:
   
   # Weekly sync to catch any drift
   schedule:
     - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
-  
-  # Trigger on any push to main (when labels might be changed via web UI)
-  push:
-    branches: [main]
-    paths: 
-      - '.github/workflows/sync-labels.yml'
 
 jobs:
   sync-labels:
@@ -20,7 +18,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      metadata: read
     
     steps:
       - name: Checkout
@@ -159,6 +156,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Labels Applied" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
-          cat source-labels.json >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.get-source-labels.outputs.labels }}' >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
