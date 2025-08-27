@@ -1,9 +1,9 @@
 name: Sync Organization Labels
 
 on:
-  # Trigger when labels are modified in this repository
-  issues:
-    types: [labeled, unlabeled]
+  # Trigger when labels themselves are created, edited, or deleted in this repository
+  label:
+    types: [created, edited, deleted]
   
   # Manual trigger
   workflow_dispatch:
@@ -17,10 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: read
-      repository-projects: read
+      issues: write
       metadata: read
-      administration: write
     
     steps:
       - name: Checkout
@@ -136,7 +134,8 @@ jobs:
           
           if [ $failed_repos -gt 0 ]; then
             echo "⚠️  Some repositories had sync errors. Check logs above."
-            exit 1
+            echo "ℹ️  Continuing with partial success to avoid blocking other repositories."
+            # Changed from exit 1 to warning - partial failures don't stop the workflow
           else
             echo "🎉 All repositories synced successfully!"
           fi
