@@ -76,6 +76,9 @@ jobs:
           successful_repos=0
           failed_repos=0
           
+          # Create temporary files for label processing
+          echo "$source_labels" | jq -r '.[] | @base64' > labels-base64.txt
+          
           # Process each target repository
           while IFS= read -r repo_name; do
             if [ -z "$repo_name" ]; then
@@ -86,8 +89,10 @@ jobs:
             echo "🔄 Syncing labels for Oval-Tutu/$repo_name"
             total_repos=$((total_repos + 1))
             
-            # Process each label from source
-            echo "$source_labels" | jq -r '.[] | @base64' | while IFS= read -r label_data; do
+            repo_failed=0
+            
+            # Process each label from source (avoiding subshell)
+            while IFS= read -r label_data; do
               # Decode the label data
               label_json=$(echo "$label_data" | base64 -d)
               name=$(echo "$label_json" | jq -r '.name')
@@ -105,10 +110,11 @@ jobs:
                 echo "    ✅ Label '$name' synced successfully"
               else
                 echo "    ⚠️  Label '$name' sync failed"
+                repo_failed=1
               fi
-            done
+            done < labels-base64.txt
             
-            if [ $? -eq 0 ]; then
+            if [ $repo_failed -eq 0 ]; then
               successful_repos=$((successful_repos + 1))
               echo "  ✅ Repository $repo_name completed successfully"
             else
