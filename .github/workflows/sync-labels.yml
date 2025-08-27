@@ -30,7 +30,7 @@ jobs:
 
       - name: Get source labels and sync to organization repositories
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ORG_TOKEN }}
         run: |
           echo "Getting labels from Oval-Tutu/.github repository..."
           gh label list --repo Oval-Tutu/.github --json name,color,description > source-labels.json
