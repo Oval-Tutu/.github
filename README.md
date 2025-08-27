@@ -1,2 +1,1 @@
-# .github
-Oval Tutu GitHub profile ️🖼️
+SUPPORT.md
